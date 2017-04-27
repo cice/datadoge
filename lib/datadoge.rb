@@ -7,6 +7,8 @@ module Datadoge
 
   with_configuration do
     has :environments, classes: Array, default: ['production']
+    has :host_name, classes: String, default: ENV['INSTRUMENTATION_HOSTNAME']
+    has :tags, classes: Array, default: []
   end
 
   class Railtie < Rails::Railtie
@@ -19,9 +21,9 @@ module Datadoge
         action = "action:#{event.payload[:action]}"
         format = "format:#{event.payload[:format] || 'all'}"
         format = "format:all" if format == "format:*/*"
-        host = "host:#{ENV['INSTRUMENTATION_HOSTNAME']}"
+        host = "host:#{Datadoge.configuration.host_name}"
         status = event.payload[:status]
-        tags = [controller, action, format, host]
+        tags = [controller, action, format, host, *Datadoge.configuration.tags]
         ActiveSupport::Notifications.instrument :performance, :action => :timing, :tags => tags, :measurement => "request.total_duration", :value => event.duration
         ActiveSupport::Notifications.instrument :performance, :action => :timing, :tags => tags,  :measurement => "database.query.time", :value => event.payload[:db_runtime]
         ActiveSupport::Notifications.instrument :performance, :action => :timing, :tags => tags,  :measurement => "web.view.time", :value => event.payload[:view_runtime]
