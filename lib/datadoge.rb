@@ -7,7 +7,7 @@ module Datadoge
 
   with_configuration do
     has :environments, classes: Array, default: ['production']
-    has :host_name, classes: String, default: ENV['INSTRUMENTATION_HOSTNAME']
+    has :host_name, classes: [String, NilClass], default: ENV['INSTRUMENTATION_HOSTNAME']
     has :tags, classes: Array, default: []
   end
 
